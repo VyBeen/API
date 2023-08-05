@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id         Int       @id @default(autoincrement())
+    furwazId   Int       @unique
+    pseudo     String
+    room       Room      @relation("room", fields: [roomId], references: [id])
+    roomId     Int
+}
+
+model Room {
+    id         Int       @id @default(autoincrement())
+    name       String
+    users      User[]    @relation("room")
+    playlist   Playlist? @relation("room")
+    player     Player?   @relation("room")
+}
+
+model Song {
+    id            Int        @id @default(autoincrement())
+    title         String
+    artist        String
+    url           String
+    cover         String
+    nextId        Int?       @unique
+    next          Song?      @relation("nextSong", fields: [nextId], references: [id])
+    prev          Song?      @relation("nextSong")
+    playlistStart Playlist?  @relation("headSong")
+    playlistEnd   Playlist?  @relation("tailSong")
+    Player        Player?     @relation("song")
+}
+
+model Playlist {
+    id         Int        @id @default(autoincrement())
+    room       Room?      @relation("room", fields: [roomId], references: [id])
+    roomId     Int?       @unique
+    head       Song?      @relation("headSong", fields: [headId], references: [id])
+    headId     Int?       @unique
+    tail       Song?      @relation("tailSong", fields: [tailId], references: [id])
+    tailId     Int?       @unique
+}
+
+model Player {
+    id         Int       @id @default(autoincrement())
+    room       Room?     @relation("room", fields: [roomId], references: [id])
+    song       Song?     @relation("song", fields: [songId], references: [id])
+    position   Float
+    cursorDate DateTime  @default(now())
+    playing    Boolean
+    roomId     Int?      @unique
+    songId     Int?      @unique
+}

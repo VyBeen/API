@@ -1,0 +1,117 @@
+{
+    "code": "en",
+    "name": "English",
+    "lang": {
+        "error": {
+            "generic": {
+                "routeNotFound": "The route was not found",
+                "internalError": "An internal error occurred",
+                "notEnoughPerms": "Not enough permissions"
+            },
+            "token": {
+                "notRetreived": "The token could not be retrieved",
+                "missing": "The auth token is missing",
+                "invalid": "The auth token is invalid"
+            },
+            "string": {
+                "required": "The string is required",
+                "type": "The string must be a string"
+            },
+            "users": {
+                "notFound": "The user could not be found"
+            },
+            "rooms": {
+                "notFound": "The room could not be found"
+            },
+            "songs": {
+                "notFound": "The song could not be found"
+            },
+            "players": {
+                "notFound": "The player could not be found",
+                "noSong": "The player has no song playing",
+                "noNextSong": "The player has no next song",
+                "noPrevSong": "The player has no previous song",
+                "noSongSpecified": "No song was specified"
+            },
+            "playlists": {
+                "notFound": "The playlist could not be found"
+            },
+            "body": {
+                "invalid": "The given body is invalid",
+                "required": "The {value} key is required"
+            },
+            "pseudo": {
+                "required": "The pseudo is required",
+                "type": "The pseudo must be a string",
+                "length": "The pseudo must be between 2 and 64 characters"
+            },
+            "id": {
+                "required": "The id is required",
+                "type": "The id must be a number"
+            },
+            "number": {
+                "required": "The number is required",
+                "type": "The number must be a number",
+                "invalid": "The number is invalid"
+            },
+            "stream": {
+                "notFound": "The stream could not be found"
+            }
+        },
+        
+        "info": {
+            "user": {
+                "logged": "User logged in successfully",
+                "created": "User created successfully",
+                "fetched": "User fetched successfully",
+                "updated": "User updated successfully",
+                "deleted": "User deleted successfully"
+            },
+            "room": {
+                "created": "Room created successfully",
+                "fetched": "Room fetched successfully",
+                "updated": "Room updated successfully",
+                "deleted": "Room deleted successfully",
+                "joined": "Room joined successfully"
+            },
+            "events": {
+                "created": "Event created successfully",
+                "fetched": "Event fetched successfully",
+                "updated": "Event updated successfully",
+                "deleted": "Event deleted successfully"
+            },
+            "playlists": {
+                "created": "Playlist created successfully",
+                "fetched": "Playlist fetched successfully",
+                "updated": "Playlist updated successfully",
+                "deleted": "Playlist deleted successfully"
+            },
+            "player": {
+                "created": "Player created successfully",
+                "fetched": "Player fetched successfully",
+                "updated": "Player updated successfully",
+                "deleted": "Player deleted successfully",
+                "paused": "Player paused successfully",
+                "played": "Player played successfully",
+                "changed": "Player changed successfully"
+            },
+            "songs": {
+                "created": "Song created successfully",
+                "fetched": "Song fetched successfully",
+                "updated": "Song updated successfully",
+                "deleted": "Song deleted successfully",
+                "added": "Song added to playlist successfully",
+                "moved": "Song moved in playlist successfully"
+            },
+            "token": {
+                "retreived": "Token retreived successfully"
+            },
+            "users": {
+                "fetched": "Users fetched successfully"
+            },
+            "stream": {
+                "created": "Stream created successfully"
+            }
+        }
+    }
+}
