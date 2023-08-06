@@ -5,3 +5,4 @@
 .vscode/
 docker-compose.yml
 *.log
+db/
