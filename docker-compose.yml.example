@@ -3,6 +3,7 @@ version: '3.1'
 services:
   # MariaDB setup
   db:
+    container_name: vybeen-db
     image: mariadb
     restart: always
     command: [
@@ -11,7 +12,7 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - api_network
+      - vybeen_network
     volumes:
       - ./db/data:/var/lib/mysql
     environment:
@@ -20,12 +21,13 @@ services:
 
   # Node api setup
   node:
+    container_name: vybeen-api
     build: .
     restart: always
     ports:
       - "3000:3000"
     networks:
-      - api_network
+      - vybeen_network
     environment:
       PORT: 8080
       APP_KEY: <insert_furwaz_key>
@@ -34,14 +36,15 @@ services:
 
   # Added adminer (light phpmyadmin), to be able to view the database
   adminer:
+    container_name: vybeen-adminer
     image: adminer
     restart: always
     ports:
       - "8008:8080"
     networks:
-      - api_network
+      - vybeen_network
 
 # Common network for all services
 networks:
-  api_network:
+  vybeen_network:
     driver: bridge
