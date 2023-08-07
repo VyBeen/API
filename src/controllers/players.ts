@@ -30,19 +30,25 @@ export async function playPlayer (req: express.Request, res: express.Response) {
     if (playerId === null) return;
 
     try {
-        const player = await prisma.player.update({ where: { id: playerId }, data: { playing: true, cursorDate: new Date() } });
+        const player = await Players.getPlayerFromId(playerId);
         if (player === null) {
             new ErrLog(res.locals.lang.error.players.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        if (player.roomId !== null) {
-            addRoomEvent(player.roomId, {
+        if (player.playing) return;
+
+        const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { playing: true, cursorDate: new Date() } });
+        if (newPlayer.roomId !== null) {
+            addRoomEvent(newPlayer.roomId, {
                 type: EventType.PlayerPlayed,
                 data: {
-                    user: res.locals.token.id
+                    user: res.locals.token.id,
+                    position: newPlayer.position,
+                    cursorDate: newPlayer.cursorDate
                 }
             });
         }
+        console.log('Play event, new position: ' + newPlayer.position.toString());
         new ResLog(res.locals.lang.info.player.played, Players.makePublicPlayer(player), Log.CODE.OK).sendTo(res);
     } catch (err) {
         console.error(err);
@@ -55,16 +61,24 @@ export async function pausePlayer (req: express.Request, res: express.Response) 
     if (playerId === null) return;
 
     try {
-        const player = await prisma.player.update({ where: { id: playerId }, data: { playing: false } });
+        const player = await Players.getPlayerFromId(playerId);
         if (player === null) {
             new ErrLog(res.locals.lang.error.players.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        if (player.roomId !== null) {
-            addRoomEvent(player.roomId, {
+        if (!player.playing) return;
+
+        const newPosition = (new Date().getUTCSeconds() - player.cursorDate.getUTCSeconds()) + player.position;
+        console.log('Pause event, new position: ' + newPosition.toString());
+
+        const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { playing: false, cursorDate: new Date(), position: newPosition } });
+        if (newPlayer.roomId !== null) {
+            addRoomEvent(newPlayer.roomId, {
                 type: EventType.PlayerPaused,
                 data: {
-                    user: res.locals.token.id
+                    user: res.locals.token.id,
+                    position: newPlayer.position,
+                    cursorDate: newPlayer.cursorDate
                 }
             });
         }
@@ -97,21 +111,23 @@ export async function changePlayer (req: express.Request, res: express.Response)
             new ErrLog(res.locals.lang.error.songs.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        await prisma.player.update({ where: { id: playerId }, data: { songId: body.songId, playing: true, position: 0, cursorDate: new Date() } });
+        const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { songId: body.songId, playing: true, position: 0, cursorDate: new Date() } });
 
         if (player.roomId !== null) {
             addRoomEvent(player.roomId, {
                 type: EventType.PlayerChanged,
                 data: {
                     user: res.locals.token.id,
-                    song: body.songId
+                    song: newPlayer.songId
                 }
             });
             if (!player.playing) {
                 addRoomEvent(player.roomId, {
                     type: EventType.PlayerPlayed,
                     data: {
-                        user: res.locals.token.id
+                        user: res.locals.token.id,
+                        position: newPlayer.position,
+                        cursorDate: newPlayer.cursorDate
                     }
                 });
             }
@@ -190,7 +206,7 @@ export async function prevPlayer (req: express.Request, res: express.Response) {
 
         if (player.roomId !== null) {
             addRoomEvent(player.roomId, {
-                type: EventType.PlayerPrevioused,
+                type: EventType.PlayerPreved,
                 data: {
                     user: res.locals.token.id,
                     song: song.id

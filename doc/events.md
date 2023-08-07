@@ -73,7 +73,9 @@ Emitted when a player is played
 Data:
 ```json
 {
-    "user": 0
+    "user": 0,
+    "position": 0,
+    "cursorDate": "date"
 }
 ```
 
@@ -83,7 +85,9 @@ Emitted when a player is paused
 Data:
 ```json
 {
-    "user": 0
+    "user": 0,
+    "position": 0,
+    "cursorDate": "date"
 }
 ```
 
@@ -109,8 +113,8 @@ Data:
 }
 ```
 
-### player.previoused
-Emitted when a player is previoused
+### player.preved
+Emitted when a player is preved
 
 Data:
 ```json

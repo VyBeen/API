@@ -63,6 +63,6 @@ export enum EventType {
     PlayerPaused,
     PlayerNexted,
     PlayerChanged,
-    PlayerPrevioused,
+    PlayerPreved,
     PlayerMoved
 }

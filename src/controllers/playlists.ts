@@ -34,8 +34,8 @@ export async function createSong (req: express.Request, res: express.Response) {
         }
         const song = await prisma.song.create({
             data: {
-                title: body.title,
-                artist: body.artist,
+                title: body.title.replace(/\([a-zA-Z\\. ]*\)/g, ''),
+                artist: body.artist.replace(/\([a-zA-Z\\. ]*\)/g, ''),
                 cover: body.cover,
                 url: body.url
             }
