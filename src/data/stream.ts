@@ -18,10 +18,10 @@ export async function getOrCreateStream (id: string): Promise<StreamResult> {
 
                     const file = fs.createWriteStream(filepath);
                     const stream = ytdl.downloadFromInfo(infos, { format });
+                    let size = 0;
                     stream.pipe(file);
-                    stream.on('end', () => {
-                        resolve({ filepath, size: stats.size });
-                    });
+                    stream.on('data', chunk => { size += chunk.length as number; });
+                    stream.on('end', () => { resolve({ filepath, size }); });
                 }).catch(err => {
                     reject(err);
                 });
