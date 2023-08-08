@@ -144,13 +144,14 @@ export async function removeSong (req: express.Request, res: express.Response) {
         }
         if (playlist.headId === songId) {
             await prisma.playlist.update({ where: { id: playlistId }, data: { headId: song.nextId } });
+            await prisma.song.delete({ where: { id: songId } });
         } else {
             const prev = await prisma.song.findFirst({ where: { nextId: songId } });
             if (prev !== null) {
+                await prisma.song.delete({ where: { id: songId } });
                 await prisma.song.update({ where: { id: prev.id }, data: { nextId: song.nextId } });
             }
         }
-        await prisma.song.delete({ where: { id: songId } });
 
         if (playlist.roomId !== null) {
             addRoomEvent(playlist.roomId, {
