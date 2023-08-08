@@ -157,7 +157,7 @@ export async function nextPlayer (req: express.Request, res: express.Response) {
             new ErrLog(res.locals.lang.error.players.noNextSong, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        await prisma.player.update({ where: { id: playerId }, data: { songId: player.song.nextId, playing: true, position: 0, cursorDate: new Date() } });
+        const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { songId: player.song.nextId, playing: true, position: 0, cursorDate: new Date() } });
 
         if (player.roomId !== null) {
             addRoomEvent(player.roomId, {
@@ -171,7 +171,9 @@ export async function nextPlayer (req: express.Request, res: express.Response) {
                 addRoomEvent(player.roomId, {
                     type: EventType.PlayerPlayed,
                     data: {
-                        user: res.locals.token.id
+                        user: res.locals.token.id,
+                        position: newPlayer.position,
+                        cursorDate: newPlayer.cursorDate
                     }
                 });
             }
@@ -202,7 +204,7 @@ export async function prevPlayer (req: express.Request, res: express.Response) {
             new ErrLog(res.locals.lang.error.players.noPrevSong, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        await prisma.player.update({ where: { id: playerId }, data: { songId: song.id, playing: true, position: 0, cursorDate: new Date() } });
+        const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { songId: song.id, playing: true, position: 0, cursorDate: new Date() } });
 
         if (player.roomId !== null) {
             addRoomEvent(player.roomId, {
@@ -216,7 +218,9 @@ export async function prevPlayer (req: express.Request, res: express.Response) {
                 addRoomEvent(player.roomId, {
                     type: EventType.PlayerPlayed,
                     data: {
-                        user: res.locals.token.id
+                        user: res.locals.token.id,
+                        position: newPlayer.position,
+                        cursorDate: newPlayer.cursorDate
                     }
                 });
             }
