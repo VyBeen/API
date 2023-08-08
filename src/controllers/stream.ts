@@ -41,7 +41,9 @@ export async function getStream (req: express.Request, res: express.Response) {
 
     fs.stat(`./tmp/${id}.mp3`, (err, stats) => {
         if (err !== null) {
-            new ErrLog(res.locals.lang.error.stream.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
+            makeStream(req, res)
+                .then(() => {})
+                .catch(() => {});
             return;
         }
         if (!stats.isFile()) {
