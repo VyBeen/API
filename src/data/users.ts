@@ -121,7 +121,7 @@ export async function registerUser (token: string, user: any): Promise<User> {
     delete portalRequests[token];
 
     const room = await createRoom();
-    const dbUser = await getUserFromId(user.id);
+    const dbUser = await prisma.user.findUnique({ where: { furwazId: user.id } });
     if (dbUser === null) {
         return await prisma.user.create({
             data: {
