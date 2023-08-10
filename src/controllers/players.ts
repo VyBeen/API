@@ -48,7 +48,6 @@ export async function playPlayer (req: express.Request, res: express.Response) {
                 }
             });
         }
-        console.log('Play event, new position: ' + newPlayer.position.toString());
         new ResLog(res.locals.lang.info.player.played, Players.makePublicPlayer(player), Log.CODE.OK).sendTo(res);
     } catch (err) {
         console.error(err);
@@ -68,8 +67,7 @@ export async function pausePlayer (req: express.Request, res: express.Response) 
         }
         if (!player.playing) return;
 
-        const newPosition = (new Date().getUTCSeconds() - player.cursorDate.getUTCSeconds()) + player.position;
-        console.log('Pause event, new position: ' + newPosition.toString());
+        const newPosition = (new Date().getSeconds() - player.cursorDate.getSeconds()) + player.position;
 
         const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { playing: false, cursorDate: new Date(), position: newPosition } });
         if (newPlayer.roomId !== null) {
