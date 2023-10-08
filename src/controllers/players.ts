@@ -17,7 +17,6 @@ export async function getPlayer (req: express.Request, res: express.Response) {
             new ErrLog(res.locals.lang.error.players.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        console.log(player);
         new ResLog(res.locals.lang.info.songs.fetched, Players.makePublicPlayer(player), Log.CODE.OK).sendTo(res);
     } catch (err) {
         console.error(err);

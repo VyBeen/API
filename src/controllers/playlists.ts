@@ -101,24 +101,46 @@ export async function moveSong (req: express.Request, res: express.Response) {
             return;
         }
         const song = await prisma.song.findUnique({ where: { id: songId } });
+        const prev = await prisma.song.findUnique({ where: { nextId: songId } });
         if (song === null) {
             new ErrLog(res.locals.lang.error.songs.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        // FIXME: maybe check if prevId === songId ?
+
+        await prisma.song.update({ where: { id: song.id }, data: { nextId: null } });
+        if (prev !== null) {
+            await prisma.song.update({ where: { id: prev.id }, data: { nextId: song.nextId } });
+            if (playlist.tailId === songId) {
+                await prisma.playlist.update({ where: { id: playlistId }, data: { tailId: prev.id } });
+            }
+        }
+
         if (body.prevId === null) {
-            await prisma.song.update({ where: { id: songId }, data: { nextId: playlist.headId } });
             await prisma.playlist.update({ where: { id: playlistId }, data: { headId: songId } });
+            await prisma.song.update({ where: { id: songId }, data: { nextId: playlist.headId } });
         } else {
-            const prev = await prisma.song.findUnique({ where: { id: body.prevId } });
-            if (prev === null) {
+            const curr = await prisma.song.findUnique({ where: { id: body.prevId } });
+            if (curr === null) {
                 new ErrLog(res.locals.lang.error.songs.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
                 return;
             }
-            await prisma.song.update({ where: { id: songId }, data: { nextId: prev.nextId } });
-            await prisma.song.update({ where: { id: prev.id }, data: { nextId: songId } });
+            await prisma.song.update({ where: { id: curr.id }, data: { nextId: songId } });
+            await prisma.song.update({ where: { id: songId }, data: { nextId: curr.nextId } });
+            if (playlist.headId === songId) {
+                await prisma.playlist.update({ where: { id: playlistId }, data: { headId: song.nextId } });
+            }
         }
-        new ResLog(res.locals.lang.info.songs.fetched, Songs.makePublicSong(song), Log.CODE.OK).sendTo(res);
+
+        addRoomEvent(playlist.roomId ?? 0, {
+            type: EventType.PlaylistMoved,
+            data: {
+                user: res.locals.token.id,
+                song: songId,
+                prev: body.prevId
+            }
+        });
+
+        new ResLog(res.locals.lang.info.songs.moved, Songs.makePublicSong(song), Log.CODE.OK).sendTo(res);
     } catch (err) {
         console.error(err);
         new ErrLog(res.locals.lang.error.generic.internalError, ErrLog.CODE.INTERNAL_SERVER_ERROR).sendTo(res);

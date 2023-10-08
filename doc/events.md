@@ -62,7 +62,7 @@ Data:
 {
     "user": 0,
     "song": 0,
-    "position": 0
+    "prev": 0
 }
 ```
 
