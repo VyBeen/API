@@ -18,6 +18,14 @@ export async function createRoom (createChilds: boolean = true): Promise<Room> {
     return room;
 }
 
+export async function deleteRoom (id: number) {
+    try {
+        return await prisma.room.delete({ where: { id } });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 export async function broadcastEvent (id: number, event: UserEvent) {
     const room = await prisma.room.findUnique({ where: { id }, include: { users: true } });
     room?.users.forEach(user => { addUserEvent(user.id, event) });

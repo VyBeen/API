@@ -43,7 +43,7 @@ model Song {
 
 model Playlist {
     id         Int        @id @default(autoincrement())
-    room       Room?      @relation("room", fields: [roomId], references: [id])
+    room       Room?      @relation("room", fields: [roomId], references: [id], onDelete: Cascade)
     roomId     Int?       @unique
     head       Song?      @relation("headSong", fields: [headId], references: [id])
     headId     Int?       @unique
@@ -53,7 +53,7 @@ model Playlist {
 
 model Player {
     id         Int       @id @default(autoincrement())
-    room       Room?     @relation("room", fields: [roomId], references: [id])
+    room       Room?     @relation("room", fields: [roomId], references: [id], onDelete: Cascade)
     song       Song?     @relation("song", fields: [songId], references: [id])
     position   Float
     cursorDate DateTime  @default(now())
