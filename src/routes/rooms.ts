@@ -7,6 +7,8 @@ router.post('/', controller.createRoom);
 router.get('/:id', controller.getRoom);
 router.patch('/:id', controller.updateRoom);
 router.get('/:id/users', controller.getRoomUsers);
-router.post('/:id/join', controller.joinRoom);
+router.post('/:id', controller.joinRoom);
+router.delete('/:id/:userId', controller.kickUser);
+router.delete('/:id', controller.leaveRoom);
 
 module.exports = router;

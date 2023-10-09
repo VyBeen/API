@@ -26,10 +26,16 @@ Get a VyBeen room data from the room id
 ### GET /rooms/{id}/users
 Get VyBeen room users from the room id
 
+### DELETE /rooms/{id}/{user}
+Kick a VyBeen user from the room id
+
 ### PATCH /rooms/{id}
 Update a VyBeen room
 
-### POST /rooms/{id}/join
+### DELETE /rooms/{id}
+Quit a VyBeen room
+
+### POST /rooms/{id}
 Join a VyBeen room
 
 ## Search

@@ -64,5 +64,9 @@ export enum EventType {
     PlayerNexted,
     PlayerChanged,
     PlayerPreved,
-    PlayerMoved
+    PlayerMoved,
+
+    UserJoined,
+    UserLeft,
+    UserKicked,
 }

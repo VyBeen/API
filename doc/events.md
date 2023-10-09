@@ -135,3 +135,36 @@ Data:
     "cursorDate": "date"
 }
 ```
+
+## Users
+
+### user.joined
+Emitted when a user joins a room
+
+Data:
+```json
+{
+    "user": 0
+}
+```
+
+### user.left
+Emitted when a user leaves a room
+
+Data:
+```json
+{
+    "user": 0
+}
+```
+
+### user.kicked
+Emitted when a user is kicked from a room
+
+Data:
+```json
+{
+    "user": 0,
+    "target": 0
+}
+```
