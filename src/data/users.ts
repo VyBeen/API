@@ -120,9 +120,9 @@ export async function registerUser (token: string, user: any): Promise<User> {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete portalRequests[token];
 
-    const room = await createRoom();
     const dbUser = await prisma.user.findUnique({ where: { furwazId: user.id } });
     if (dbUser === null) {
+        const room = await createRoom();
         return await prisma.user.create({
             data: {
                 pseudo: user.pseudo,
