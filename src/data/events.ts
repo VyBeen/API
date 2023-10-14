@@ -3,8 +3,10 @@ import { EventType } from './type';
 import type { Response } from 'express';
 import { Log, ResLog } from '../tools/log';
 import { prisma } from '../app';
+import type { Server, Socket } from 'socket.io';
+import props from '../properties.json';
+import { verify } from 'jsonwebtoken';
 
-const userEvents: Record<number, UserEventManager> = {};
 function stringifyEventType (ev: EventType) {
     const zMajCode = 'Z'.charCodeAt(0);
     return EventType[ev].toString().split('').map(letter => {
@@ -15,44 +17,52 @@ function stringifyEventType (ev: EventType) {
     }).join('').substring(1);
 }
 
-class UserEventManager {
-    events: UserEvent[];
-    response: Response | null;
-    timeout: NodeJS.Timeout | null;
+export class UserEventManager {
+    static io: Server | null = null;
+    static userEvents: Record<number, UserEventManager | undefined> = {};
 
-    constructor () {
-        this.events = [];
-        this.response = null;
-        this.timeout = null;
+    static setIOObject (obj: Server) {
+        this.io = obj;
+
+        this.io.on('connection', socket => {
+            const socketInformations = {
+                authenticated: false,
+                userId: null
+            };
+            setTimeout(() => {
+                if (socketInformations.authenticated) return;
+                socket.disconnect();
+            }, props.socket.anonymousTimeoutDisconnect);
+            socket.on('auth', (data: string) => {
+                const token = data.startsWith('Bearer')
+                    ? data.split(' ')[1]
+                    : data;
+                try {
+                    const res = verify(token, process.env.SECRET_KEY as string) as any;
+                    if (res.id !== undefined && res.id !== null) {
+                        socketInformations.authenticated = true;
+                        socketInformations.userId = res.id;
+                        this.userEvents[res.id] = new UserEventManager(socket);
+                    }
+                } catch { }
+            });
+            socket.on('disconnect', () => {
+                if (!socketInformations.authenticated || socketInformations.userId === null) return;
+                if (this.userEvents[socketInformations.userId] !== undefined) {
+                    this.userEvents[socketInformations.userId] = undefined;
+                }
+            });
+        });
+    }
+
+    socket: Socket
+
+    constructor (socket: Socket) {
+        this.socket = socket;
     }
 
     addEvent (ev: UserEvent) {
-        this.events.push(ev);
-        if (this.timeout !== null) clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => {
-            this.sendEvents();
-            this.timeout = null;
-        }, 100);
-    }
-
-    getEvents (res: Response) {
-        if (this.response !== null) {
-            this.sendEvents();
-        }
-        this.response = res;
-    }
-
-    sendEvents () {
-        if (this.response === null) return;
-        const events = this.events.map(ev => {
-            return {
-                type: stringifyEventType(ev.type),
-                data: ev.data
-            }
-        });
-        new ResLog(this.response.locals.lang.info.events.fetched, events, Log.CODE.OK).sendTo(this.response);
-        this.events = [];
-        this.response = null;
+        this.socket.emit(stringifyEventType(ev.type), ev.data);
     }
 }
 
@@ -65,11 +75,9 @@ export function addRoomEvent (id: number, event: UserEvent) {
 }
 
 export function addUserEvent (id: number, event: UserEvent) {
-    if (userEvents[id] === undefined) return;
-    userEvents[id].addEvent(event);
+    getUserEventsManager(id)?.addEvent(event);
 }
 
-export function getUserEventsManager (id: number) {
-    if (userEvents[id] === undefined) return;
-    return userEvents[id];
+export function getUserEventsManager (id: number): UserEventManager | undefined {
+    return UserEventManager.userEvents[id];
 }

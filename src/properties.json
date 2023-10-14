@@ -51,5 +51,8 @@
     },
     "portal": {
         "tokenExpiration": 900000
+    },
+    "socket": {
+        "anonymousTimeoutDisconnect": 5000
     }
 }

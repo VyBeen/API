@@ -4,6 +4,7 @@ import logger from './tools/logger';
 import process from 'process';
 import dotenv from 'dotenv';
 import { Server } from 'socket.io';
+import { UserEventManager } from './data/events';
 
 dotenv.config();
 
@@ -15,19 +16,13 @@ const io = new Server(server, {
     path: process.env.SOCKETIO_PATH,
     cors: { origin: '*' }
 });
+UserEventManager.setIOObject(io);
 
 server.on('error', errorHandler);
 server.on('listening', () => {
     const address = server.address();
     const bind = typeof address === 'string' ? 'pipe ' + String(address) : 'port ' + String(port);
     console.log('Listening on ' + bind);
-});
-
-io.on('connection', socket => {
-    console.log('connection from socket ', socket);
-    socket.on('disconnect', (reason, desc) => {
-        console.log('Socket ' + socket.id.toString() + ' disconnected !\n' + reason.toString() + ' : ' + desc.toString());
-    })
 });
 
 function main () {
