@@ -4,7 +4,8 @@ import * as Rooms from '../data/rooms';
 import { Log, ErrLog, ResLog } from '../tools/log';
 import { prisma } from '../app';
 import { createPaginationResult, getPaginationParameters } from '../tools/pagination';
-import { addRoomEvent, makePublicUser } from '../data/users';
+import { makePublicUser } from '../data/users';
+import { addRoomEvent } from '../data/events';
 import { EventType } from '../data/type';
 
 export async function createRoom (req: express.Request, res: express.Response) {

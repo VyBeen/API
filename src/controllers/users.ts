@@ -17,13 +17,6 @@ export async function getUser (req: express.Request, res: express.Response) {
     new ResLog(res.locals.lang.info.user.fetched, Users.makePublicUser(user), Log.CODE.OK).sendTo(res);
 }
 
-export function getUserEvents (req: express.Request, res: express.Response) {
-    const id = res.locals.token.id;
-    if (id === undefined) return;
-
-    Users.getUserEventsManager(id).getEvents(res);
-}
-
 export function deleteUser (req: express.Request, res: express.Response) {
     const id = sanitizer.sanitizeIdField(req.params.userId, req, res);
     if (id === null) return;

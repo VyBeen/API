@@ -3,7 +3,7 @@ import { prisma } from '../app';
 import type { UserEvent, PublicRoom } from './type';
 import { createPlayer } from './players';
 import { createPlaylist } from './playlists';
-import { addUserEvent } from './users';
+import { addUserEvent } from './events';
 
 export async function getRoomFromId (id: number): Promise<Room | null> {
     return await prisma.room.findUnique({ where: { id }, include: { playlist: true, player: true } });

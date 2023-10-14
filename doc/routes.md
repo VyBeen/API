@@ -10,9 +10,6 @@ Get VyBeen user data from the portal token
 ### GET /users/{id}
 Get VyBeen user data from the user id
 
-### GET /users/events
-Get VyBeen own user events
-
 ### DELETE /users/{id}
 Delete a VyBeen user
 

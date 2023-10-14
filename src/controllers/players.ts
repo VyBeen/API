@@ -4,7 +4,7 @@ import * as Players from '../data/players';
 import * as Songs from '../data/songs';
 import { Log, ErrLog, ResLog } from '../tools/log';
 import { prisma } from '../app';
-import { addRoomEvent } from '../data/users';
+import { addRoomEvent } from '../data/events';
 import { EventType } from '../data/type';
 
 export async function getPlayer (req: express.Request, res: express.Response) {
