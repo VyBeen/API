@@ -33,6 +33,7 @@ services:
       APP_KEY: <insert_furwaz_key>
       DATABASE_URL: "mysql://root:<change_password>@db:3306/vybeen"
       SECRET_KEY: <change_secret>
+      SOCKETIO_PATH: /socket.io
 
   # Added adminer (light phpmyadmin), to be able to view the database
   adminer:
