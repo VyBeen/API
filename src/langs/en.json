@@ -24,7 +24,8 @@
                 "notFound": "The room could not be found"
             },
             "songs": {
-                "notFound": "The song could not be found"
+                "notFound": "The song could not be found",
+                "invalidUrl": "The song url is invalid"
             },
             "players": {
                 "notFound": "The player could not be found",
