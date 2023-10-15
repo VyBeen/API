@@ -6,6 +6,7 @@ import { prisma } from '../app';
 import * as Songs from '../data/songs';
 import { addRoomEvent } from '../data/events';
 import { EventType } from '../data/type';
+import { sanitizeAuthor, sanitizeTitle } from '../data/songSanitizer';
 
 export async function getPlaylist (req: express.Request, res: express.Response) {
     const id = sanitizer.sanitizeIdField(req.params.id, req, res);
@@ -34,8 +35,8 @@ export async function createSong (req: express.Request, res: express.Response) {
         }
         const song = await prisma.song.create({
             data: {
-                title: body.title.replace(/\([a-zA-Z\\. ]*\)/g, ''),
-                artist: body.artist.replace(/\([a-zA-Z\\. ]*\)/g, ''),
+                title: sanitizeTitle(body.title),
+                artist: sanitizeAuthor(body.artist),
                 cover: body.cover,
                 url: body.url
             }

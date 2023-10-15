@@ -2,6 +2,7 @@ import type express from 'express';
 import * as sanitizer from '../tools/sanitizer';
 import { Log, ErrLog, ResLog } from '../tools/log';
 import yts from 'yt-search';
+import { sanitizeAuthor, sanitizeTitle } from '../data/songSanitizer';
 
 function getVideoIdFromUrl (url: string): string | null {
     const patterns = [
@@ -31,8 +32,8 @@ export async function searchSong (req: express.Request, res: express.Response) {
                 const infos = (await yts({ videoId }));
                 const videos = [{
                     id: videoId,
-                    title: infos.title,
-                    artist: infos.author.name,
+                    title: sanitizeTitle(infos.title),
+                    artist: sanitizeAuthor(infos.author.name),
                     url: '',
                     cover: infos.thumbnail
                 }];
@@ -42,8 +43,8 @@ export async function searchSong (req: express.Request, res: express.Response) {
             const search = await yts(query);
             const videos = search.videos.slice(0, 10).map(video => ({
                 id: video.videoId,
-                title: video.title,
-                artist: video.author.name,
+                title: sanitizeTitle(video.title),
+                artist: sanitizeAuthor(video.author.name),
                 url: '',
                 cover: video.thumbnail
             }));
