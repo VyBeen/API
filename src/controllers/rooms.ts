@@ -5,7 +5,7 @@ import { Log, ErrLog, ResLog } from '../tools/log';
 import { prisma } from '../app';
 import { createPaginationResult, getPaginationParameters } from '../tools/pagination';
 import { makePublicUser } from '../data/users';
-import { addRoomEvent } from '../data/events';
+import { addRoomEvent, addUserEvent } from '../data/events';
 import { EventType } from '../data/type';
 
 export async function createRoom (req: express.Request, res: express.Response) {
@@ -72,7 +72,15 @@ export async function kickUser (req: express.Request, res: express.Response) {
     const newRoom = await Rooms.createRoom();
     await prisma.user.update({ where: { id: userId }, data: { roomId: newRoom.id } });
 
-    await addRoomEvent(room.id, {
+    addRoomEvent(room.id, {
+        type: EventType.UserKicked,
+        data: {
+            user: res.locals.token.id,
+            target: user.id
+        }
+    });
+
+    addUserEvent(userId, {
         type: EventType.UserKicked,
         data: {
             user: res.locals.token.id,
@@ -116,7 +124,7 @@ export async function joinRoom (req: express.Request, res: express.Response) {
     try {
         await prisma.user.update({ where: { id }, data: { roomId: room.id } });
 
-        await addRoomEvent(room.id, {
+        addRoomEvent(room.id, {
             type: EventType.UserJoined,
             data: {
                 user: res.locals.token.id
@@ -147,7 +155,7 @@ export async function leaveRoom (req: express.Request, res: express.Response) {
     if (nbUser === 1) {
         await Rooms.deleteRoom(room.id);
     } else {
-        await addRoomEvent(room.id, {
+        addRoomEvent(room.id, {
             type: EventType.UserLeft,
             data: {
                 user: res.locals.token.id
