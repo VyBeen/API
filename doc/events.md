@@ -158,6 +158,26 @@ Data:
 }
 ```
 
+### user.connected
+Emitted when a user connects to vybeen
+
+Data:
+```json
+{
+    "user": 0
+}
+```
+
+### user.disconnected
+Emitted when a user disconnects to vybeen
+
+Data:
+```json
+{
+    "user": 0
+}
+```
+
 ### user.kicked
 Emitted when a user is kicked from a room
 

@@ -9,8 +9,8 @@ export async function getRoomFromId (id: number): Promise<Room | null> {
     return await prisma.room.findUnique({ where: { id }, include: { playlist: true, player: true } });
 }
 
-export async function createRoom (createChilds: boolean = true): Promise<Room> {
-    const room = await prisma.room.create({ data: { name: 'VyBeen' } });
+export async function createRoom (ownerId: number | null, createChilds: boolean = true): Promise<Room> {
+    const room = await prisma.room.create({ data: { name: 'VyBeen', ownerId } });
     if (createChilds) {
         await createPlayer(room);
         await createPlaylist(room);
@@ -36,6 +36,7 @@ export function makePublicRoom (obj: any): PublicRoom {
         id: obj.id,
         name: obj.name,
         playerId: obj.playerId ?? obj.player?.id ?? null,
-        playlistId: obj.playlistId ?? obj.playlist?.id ?? null
+        playlistId: obj.playlistId ?? obj.playlist?.id ?? null,
+        ownerId: obj.ownerId ?? obj.owner?.id ?? null
     };
 }

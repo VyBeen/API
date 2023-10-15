@@ -3,6 +3,7 @@ import * as sanitizer from '../tools/sanitizer';
 import * as Users from '../data/users';
 import { Log, ErrLog, ResLog } from '../tools/log';
 import { prisma } from '../app';
+import { UserEventManager } from '../data/events';
 
 export async function getUser (req: express.Request, res: express.Response) {
     const id = sanitizer.sanitizeIdField(req.params.userId, req, res);
@@ -14,7 +15,10 @@ export async function getUser (req: express.Request, res: express.Response) {
         return;
     }
 
-    new ResLog(res.locals.lang.info.user.fetched, Users.makePublicUser(user), Log.CODE.OK).sendTo(res);
+    new ResLog(res.locals.lang.info.user.fetched, {
+        ...Users.makePublicUser(user),
+        connected: UserEventManager.isConnected(user.id)
+    }, Log.CODE.OK).sendTo(res);
 }
 
 export function deleteUser (req: express.Request, res: express.Response) {

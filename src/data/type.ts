@@ -18,6 +18,7 @@ export interface PublicRoom {
     name: string
     playlistId: number
     playerId: number
+    ownerId: number
 }
 
 export interface PublicPlayer {
@@ -69,4 +70,6 @@ export enum EventType {
     UserJoined,
     UserLeft,
     UserKicked,
+    UserConnected,
+    UserDisconnected
 }

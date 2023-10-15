@@ -17,6 +17,7 @@ model User {
     pseudo     String
     room       Room      @relation("room", fields: [roomId], references: [id])
     roomId     Int
+    owner      Room[]    @relation("owner")
 }
 
 model Room {
@@ -25,6 +26,8 @@ model Room {
     users      User[]    @relation("room")
     playlist   Playlist? @relation("room")
     player     Player?   @relation("room")
+    owner      User?     @relation("owner", fields: [ownerId], references: [id])
+    ownerId    Int?       @unique
 }
 
 model Song {

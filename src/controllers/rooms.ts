@@ -5,7 +5,7 @@ import { Log, ErrLog, ResLog } from '../tools/log';
 import { prisma } from '../app';
 import { createPaginationResult, getPaginationParameters } from '../tools/pagination';
 import { makePublicUser } from '../data/users';
-import { addRoomEvent, addUserEvent } from '../data/events';
+import { UserEventManager, addRoomEvent, addUserEvent } from '../data/events';
 import { EventType } from '../data/type';
 
 export async function createRoom (req: express.Request, res: express.Response) {
@@ -13,7 +13,7 @@ export async function createRoom (req: express.Request, res: express.Response) {
     if (id === undefined) return;
 
     try {
-        const room = await Rooms.createRoom();
+        const room = await Rooms.createRoom(id);
         new ResLog(res.locals.lang.info.room.created, Rooms.makePublicRoom(room), Log.CODE.OK).sendTo(res);
     } catch (err) {
         console.error(err);
@@ -42,7 +42,10 @@ export async function getRoomUsers (req: express.Request, res: express.Response)
 
     const total = await prisma.user.count({ where: { roomId: id } });
     const users = await prisma.user.findMany({ where: { roomId: id }, skip: pagination.offset, take: pagination.limit });
-    const userList = users.map(user => makePublicUser(user));
+    const userList = users.map(user => ({
+        ...makePublicUser(user),
+        connected: UserEventManager.isConnected(user.id)
+    }));
     pagination.total = total;
 
     new ResLog(res.locals.lang.info.users.fetched, createPaginationResult(userList, pagination), Log.CODE.OK).sendTo(res);
@@ -69,7 +72,7 @@ export async function kickUser (req: express.Request, res: express.Response) {
         return;
     }
 
-    const newRoom = await Rooms.createRoom();
+    const newRoom = await Rooms.createRoom(userId);
     await prisma.user.update({ where: { id: userId }, data: { roomId: newRoom.id } });
 
     addRoomEvent(room.id, {
@@ -151,10 +154,11 @@ export async function leaveRoom (req: express.Request, res: express.Response) {
         return;
     }
 
-    const nbUser = await prisma.user.count({ where: { roomId: room.id } });
-    if (nbUser === 1) {
+    const roomUsers = await prisma.user.findMany({ where: { roomId: room.id } });
+    if (roomUsers.length === 1) {
         await Rooms.deleteRoom(room.id);
     } else {
+        await prisma.room.update({ where: { id: room.id }, data: { ownerId: roomUsers[0].id } });
         addRoomEvent(room.id, {
             type: EventType.UserLeft,
             data: {
@@ -163,7 +167,7 @@ export async function leaveRoom (req: express.Request, res: express.Response) {
         });
     }
 
-    const newRoom = await Rooms.createRoom();
+    const newRoom = await Rooms.createRoom(id);
     req.params.id = newRoom.id.toString();
     return joinRoom(req, res);
 }

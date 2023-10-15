@@ -38,14 +38,16 @@ export async function registerUser (token: string, user: any): Promise<User> {
 
     const dbUser = await prisma.user.findUnique({ where: { furwazId: user.id } });
     if (dbUser === null) {
-        const room = await createRoom();
-        return await prisma.user.create({
+        const room = await createRoom(null);
+        const created = await prisma.user.create({
             data: {
                 pseudo: user.pseudo,
                 furwazId: user.id,
                 roomId: room.id
             }
         });
+        await prisma.room.update({ where: { id: room.id }, data: { ownerId: created.id } });
+        return created;
     } else {
         return dbUser;
     }

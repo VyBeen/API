@@ -19,6 +19,10 @@ export class UserEventManager {
     static io: Server | null = null;
     static userEvents: Record<number, UserEventManager | undefined> = {};
 
+    static isConnected (id: number): boolean {
+        return UserEventManager.userEvents[id] !== undefined;
+    }
+
     static setIOObject (obj: Server) {
         this.io = obj;
 
@@ -31,7 +35,7 @@ export class UserEventManager {
                 if (socketInformations.authenticated) return;
                 socket.disconnect();
             }, props.socket.anonymousTimeoutDisconnect);
-            socket.on('auth', (data: string) => {
+            socket.on('auth', async (data: string) => {
                 const token = data.startsWith('Bearer')
                     ? data.split(' ')[1]
                     : data;
@@ -45,14 +49,34 @@ export class UserEventManager {
                             socket.disconnect(); // Already connected
                             return;
                         }
+                        const dbUser = await prisma.user.findUnique({ where: { id: res.id } });
+                        if (dbUser === null) {
+                            socket.disconnect();
+                            return;
+                        }
                         this.userEvents[res.id] = new UserEventManager(socket);
+                        addRoomEvent(dbUser.roomId, {
+                            type: EventType.UserConnected,
+                            data: {
+                                user: res.id
+                            }
+                        });
                     }
                 } catch { }
             });
-            socket.on('disconnect', () => {
+            socket.on('disconnect', async () => {
                 if (!socketInformations.authenticated || socketInformations.userId === null) return;
                 if (this.userEvents[socketInformations.userId] !== undefined) {
                     this.userEvents[socketInformations.userId] = undefined;
+                }
+                const dbUser = await prisma.user.findUnique({ where: { id: socketInformations.userId } });
+                if (dbUser !== null) {
+                    addRoomEvent(dbUser.roomId, {
+                        type: EventType.UserDisconnected,
+                        data: {
+                            user: socketInformations.userId
+                        }
+                    });
                 }
             });
         });
