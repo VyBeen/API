@@ -38,7 +38,7 @@ export async function playPlayer (req: express.Request, res: express.Response) {
 
         const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { playing: true, cursorDate: new Date() } });
         if (newPlayer.roomId !== null) {
-            addRoomEvent(newPlayer.roomId, {
+            await addRoomEvent(newPlayer.roomId, {
                 type: EventType.PlayerPlayed,
                 data: {
                     user: res.locals.token.id,
@@ -66,11 +66,11 @@ export async function pausePlayer (req: express.Request, res: express.Response) 
         }
         if (!player.playing) return;
 
-        const newPosition = (new Date().getSeconds() - player.cursorDate.getSeconds()) + player.position;
+        const newPosition = (new Date().getTime() - player.cursorDate.getTime()) / 1000 + player.position;
 
         const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { playing: false, cursorDate: new Date(), position: newPosition } });
         if (newPlayer.roomId !== null) {
-            addRoomEvent(newPlayer.roomId, {
+            await addRoomEvent(newPlayer.roomId, {
                 type: EventType.PlayerPaused,
                 data: {
                     user: res.locals.token.id,
@@ -111,7 +111,7 @@ export async function changePlayer (req: express.Request, res: express.Response)
         const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { songId: body.songId, playing: true, position: 0, cursorDate: new Date() } });
 
         if (player.roomId !== null) {
-            addRoomEvent(player.roomId, {
+            await addRoomEvent(player.roomId, {
                 type: EventType.PlayerChanged,
                 data: {
                     user: res.locals.token.id,
@@ -119,7 +119,7 @@ export async function changePlayer (req: express.Request, res: express.Response)
                 }
             });
             if (!player.playing) {
-                addRoomEvent(player.roomId, {
+                await addRoomEvent(player.roomId, {
                     type: EventType.PlayerPlayed,
                     data: {
                         user: res.locals.token.id,
@@ -157,15 +157,15 @@ export async function nextPlayer (req: express.Request, res: express.Response) {
         const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { songId: player.song.nextId, playing: true, position: 0, cursorDate: new Date() } });
 
         if (player.roomId !== null) {
-            addRoomEvent(player.roomId, {
+            await addRoomEvent(player.roomId, {
                 type: EventType.PlayerNexted,
                 data: {
                     user: res.locals.token.id,
                     song: player.song.nextId
                 }
             });
-            if (!player.playing) {
-                addRoomEvent(player.roomId, {
+            if (player.playing === false) {
+                await addRoomEvent(player.roomId, {
                     type: EventType.PlayerPlayed,
                     data: {
                         user: res.locals.token.id,
@@ -204,15 +204,15 @@ export async function prevPlayer (req: express.Request, res: express.Response) {
         const newPlayer = await prisma.player.update({ where: { id: playerId }, data: { songId: song.id, playing: true, position: 0, cursorDate: new Date() } });
 
         if (player.roomId !== null) {
-            addRoomEvent(player.roomId, {
+            await addRoomEvent(player.roomId, {
                 type: EventType.PlayerPreved,
                 data: {
                     user: res.locals.token.id,
                     song: song.id
                 }
             });
-            if (!player.playing) {
-                addRoomEvent(player.roomId, {
+            if (player.playing === false) {
+                await addRoomEvent(player.roomId, {
                     type: EventType.PlayerPlayed,
                     data: {
                         user: res.locals.token.id,
@@ -243,7 +243,7 @@ export async function movePlayer (req: express.Request, res: express.Response) {
         }
 
         if (player.roomId !== null) {
-            addRoomEvent(player.roomId, {
+            await addRoomEvent(player.roomId, {
                 type: EventType.PlayerMoved,
                 data: {
                     user: res.locals.token.id,

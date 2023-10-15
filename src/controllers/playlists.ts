@@ -46,7 +46,7 @@ export async function createSong (req: express.Request, res: express.Response) {
         await prisma.playlist.update({ where: { id: playlistId }, data: { headId: playlist?.headId ?? song.id, tailId: song.id } });
 
         if (playlist.roomId !== null) {
-            addRoomEvent(playlist.roomId, {
+            await addRoomEvent(playlist.roomId, {
                 type: EventType.PlaylistAdded,
                 data: {
                     user: res.locals.token.id,
@@ -131,7 +131,7 @@ export async function moveSong (req: express.Request, res: express.Response) {
             }
         }
 
-        addRoomEvent(playlist.roomId ?? 0, {
+        await addRoomEvent(playlist.roomId ?? 0, {
             type: EventType.PlaylistMoved,
             data: {
                 user: res.locals.token.id,
@@ -176,7 +176,7 @@ export async function removeSong (req: express.Request, res: express.Response) {
         }
 
         if (playlist.roomId !== null) {
-            addRoomEvent(playlist.roomId, {
+            await addRoomEvent(playlist.roomId, {
                 type: EventType.PlaylistRemoved,
                 data: {
                     user: res.locals.token.id,

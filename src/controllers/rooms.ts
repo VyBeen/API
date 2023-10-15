@@ -72,7 +72,7 @@ export async function kickUser (req: express.Request, res: express.Response) {
     const newRoom = await Rooms.createRoom();
     await prisma.user.update({ where: { id: userId }, data: { roomId: newRoom.id } });
 
-    addRoomEvent(room.id, {
+    await addRoomEvent(room.id, {
         type: EventType.UserKicked,
         data: {
             user: res.locals.token.id,
@@ -116,7 +116,7 @@ export async function joinRoom (req: express.Request, res: express.Response) {
     try {
         await prisma.user.update({ where: { id }, data: { roomId: room.id } });
 
-        addRoomEvent(room.id, {
+        await addRoomEvent(room.id, {
             type: EventType.UserJoined,
             data: {
                 user: res.locals.token.id
@@ -147,7 +147,7 @@ export async function leaveRoom (req: express.Request, res: express.Response) {
     if (nbUser === 1) {
         await Rooms.deleteRoom(room.id);
     } else {
-        addRoomEvent(room.id, {
+        await addRoomEvent(room.id, {
             type: EventType.UserLeft,
             data: {
                 user: res.locals.token.id
