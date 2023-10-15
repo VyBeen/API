@@ -1,6 +1,7 @@
 import type express from 'express';
 import * as sanitizer from '../tools/sanitizer';
 import * as Rooms from '../data/rooms';
+import * as Users from '../data/users';
 import { Log, ErrLog, ResLog } from '../tools/log';
 import { prisma } from '../app';
 import { createPaginationResult, getPaginationParameters } from '../tools/pagination';
@@ -123,9 +124,21 @@ export async function joinRoom (req: express.Request, res: express.Response) {
         new ErrLog(res.locals.lang.error.rooms.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
         return;
     }
+    const user = await Users.getUserFromId(id);
+    if (user === null) {
+        new ErrLog(res.locals.lang.error.users.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
+        return;
+    }
 
     try {
         await prisma.user.update({ where: { id }, data: { roomId: room.id } });
+        if (room.ownerId === null) {
+            await prisma.room.update({ where: { id: room.id }, data: { ownerId: id } });
+        }
+        const oldRoomUsers = await prisma.user.findMany({ where: { roomId: user.roomId } });
+        if (oldRoomUsers.length === 0) {
+            await Rooms.deleteRoom(user.roomId);
+        }
 
         addRoomEvent(room.id, {
             type: EventType.UserJoined,
@@ -154,20 +167,29 @@ export async function leaveRoom (req: express.Request, res: express.Response) {
         return;
     }
 
-    const roomUsers = await prisma.user.findMany({ where: { roomId: room.id } });
-    if (roomUsers.length === 1) {
-        await Rooms.deleteRoom(room.id);
-    } else {
-        await prisma.room.update({ where: { id: room.id }, data: { ownerId: roomUsers[0].id } });
-        addRoomEvent(room.id, {
-            type: EventType.UserLeft,
-            data: {
-                user: res.locals.token.id
+    if (room.ownerId === id) {
+        const roomUsers = await prisma.user.findMany({ where: { roomId: room.id } });
+        if (roomUsers.length > 1) {
+            let newOwner = -1;
+            for (const user of roomUsers) {
+                if (user.id !== id) {
+                    newOwner = user.id;
+                    break;
+                }
             }
-        });
+            if (newOwner !== -1) {
+                await prisma.room.update({ where: { id: room.id }, data: { ownerId: newOwner } });
+            }
+        }
     }
+    addRoomEvent(room.id, {
+        type: EventType.UserLeft,
+        data: {
+            user: res.locals.token.id
+        }
+    });
 
-    const newRoom = await Rooms.createRoom(id);
+    const newRoom = await Rooms.createRoom(null);
     req.params.id = newRoom.id.toString();
     return joinRoom(req, res);
 }

@@ -33,14 +33,12 @@ export async function createSong (req: express.Request, res: express.Response) {
             new ErrLog(res.locals.lang.error.playlists.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
-        const song = await prisma.song.create({
-            data: {
-                title: sanitizeTitle(body.title),
-                artist: sanitizeAuthor(body.artist),
-                cover: body.cover,
-                url: body.url
-            }
-        });
+        const song = await Songs.createSong(
+            sanitizeTitle(body.title),
+            sanitizeAuthor(body.artist),
+            body.cover,
+            body.url
+        );
         if (playlist.tailId !== null) {
             await prisma.song.update({ where: { id: playlist.tailId }, data: { nextId: song.id } });
         }
