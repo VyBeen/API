@@ -1,7 +1,5 @@
 import type { UserEvent } from './type';
 import { EventType } from './type';
-import type { Response } from 'express';
-import { Log, ResLog } from '../tools/log';
 import { prisma } from '../app';
 import type { Server, Socket } from 'socket.io';
 import props from '../properties.json';
@@ -42,6 +40,11 @@ export class UserEventManager {
                     if (res.id !== undefined && res.id !== null) {
                         socketInformations.authenticated = true;
                         socketInformations.userId = res.id;
+                        if (this.userEvents[res.id] !== undefined) {
+                            socket.emit('error', 'Already connected');
+                            socket.disconnect(); // Already connected
+                            return;
+                        }
                         this.userEvents[res.id] = new UserEventManager(socket);
                     }
                 } catch { }
