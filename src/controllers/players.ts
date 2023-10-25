@@ -164,7 +164,7 @@ export async function nextPlayer (req: express.Request, res: express.Response) {
                     song: player.song.nextId
                 }
             });
-            if (player.playing === false) {
+            if (!player.playing) {
                 addRoomEvent(player.roomId, {
                     type: EventType.PlayerPlayed,
                     data: {

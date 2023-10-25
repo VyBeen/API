@@ -38,6 +38,7 @@ app.use('/playlists', translation, auth, dbNeeded, require('./routes/playlists')
 app.use('/rooms', translation, auth, dbNeeded, require('./routes/rooms'));
 app.use('/search', translation, dbNeeded, require('./routes/search'));
 app.use('/stream', translation, dbNeeded, require('./routes/stream'));
+app.use('/request', translation, auth, require('./routes/request'));
 
 app.use(translation, (req, res) => {
     new ErrLog(res.locals.lang.error.generic.routeNotFound, Log.CODE.NOT_FOUND).sendTo(res);
