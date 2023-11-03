@@ -11,3 +11,20 @@ export function sanitizeTitle (title: string): string {
 export function sanitizeAuthor (author: string): string {
     return author.replace(/\(.*\)/g, '').trim();
 }
+
+export function getSongTitleAuthor (title: string, author: string): { title: string, author: string } {
+    const sanitizedTitle = sanitizeTitle(title);
+    const sanitizedAuthor = sanitizeAuthor(author);
+
+    if (title.match(/.* - .*/) !== null) {
+        return {
+            title: sanitizedTitle.split(' - ')[1].replace(/-/g, '').trim(),
+            author: sanitizedTitle.split(' - ')[0].replace(/-/g, '').trim()
+        }
+    } else {
+        return {
+            title: sanitizedTitle,
+            author: sanitizedAuthor
+        }
+    }
+}

@@ -6,7 +6,7 @@ import { prisma } from '../app';
 import * as Songs from '../data/songs';
 import { addRoomEvent } from '../data/events';
 import { EventType } from '../data/type';
-import { sanitizeAuthor, sanitizeTitle } from '../data/songSanitizer';
+import { getSongTitleAuthor } from '../data/songSanitizer';
 
 export async function getPlaylist (req: express.Request, res: express.Response) {
     const id = sanitizer.sanitizeIdField(req.params.id, req, res);
@@ -33,9 +33,10 @@ export async function createSong (req: express.Request, res: express.Response) {
             new ErrLog(res.locals.lang.error.playlists.notFound, ErrLog.CODE.NOT_FOUND).sendTo(res);
             return;
         }
+        const songTitleAuthor = getSongTitleAuthor(body.title, body.artist);
         const song = await Songs.createSong(
-            sanitizeTitle(body.title),
-            sanitizeAuthor(body.artist),
+            songTitleAuthor.title,
+            songTitleAuthor.author,
             body.cover,
             body.url
         );

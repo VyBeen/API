@@ -2,7 +2,7 @@ import type express from 'express';
 import * as sanitizer from '../tools/sanitizer';
 import { Log, ErrLog, ResLog } from '../tools/log';
 import yts from 'yt-search';
-import { sanitizeAuthor, sanitizeTitle } from '../data/songSanitizer';
+import { getSongTitleAuthor, sanitizeAuthor, sanitizeTitle } from '../data/songSanitizer';
 
 function getVideoIdFromUrl (url: string): string | null {
     const patterns = [
@@ -30,10 +30,11 @@ export async function searchSong (req: express.Request, res: express.Response) {
                 new ErrLog(res.locals.lang.error.songs.invalidUrl, ErrLog.CODE.INTERNAL_SERVER_ERROR).sendTo(res);
             } else {
                 const infos = (await yts({ videoId }));
+                const songTitleAuthor = getSongTitleAuthor(infos.title, infos.author.name);
                 const videos = [{
                     id: videoId,
-                    title: sanitizeTitle(infos.title),
-                    artist: sanitizeAuthor(infos.author.name),
+                    title: songTitleAuthor.title,
+                    artist: songTitleAuthor.author,
                     url: '',
                     cover: infos.thumbnail
                 }];
@@ -41,13 +42,16 @@ export async function searchSong (req: express.Request, res: express.Response) {
             }
         } else {
             const search = await yts(query);
-            const videos = search.videos.slice(0, 10).map(video => ({
-                id: video.videoId,
-                title: sanitizeTitle(video.title),
-                artist: sanitizeAuthor(video.author.name),
-                url: '',
-                cover: video.thumbnail
-            }));
+            const videos = search.videos.slice(0, 10).map(video => {
+                const songTitleAuthor = getSongTitleAuthor(video.title, video.author.name);
+                return {
+                    id: video.videoId,
+                    title: songTitleAuthor.title,
+                    artist: songTitleAuthor.author,
+                    url: '',
+                    cover: video.thumbnail
+                }
+            });
             new ResLog(res.locals.lang.info.songs.fetched, videos, Log.CODE.OK).sendTo(res);
         }
     } catch (err) {
