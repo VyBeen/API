@@ -42,7 +42,7 @@ export async function retreiveUser (req: express.Request, res: express.Response)
     const APP_KEY = process.env.APP_KEY as string;
 
     try {
-        response = await fetch(API_URL + '/portal/' + token, {
+        response = await fetch(API_URL + '/portal/user?token=' + token, {
             method: 'GET',
             headers: { Authorization: `Bearer ${APP_KEY}` }
         });
