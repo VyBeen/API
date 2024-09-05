@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import { createUser, makePrivateUser, registerUser } from '../data/users';
 import * as sanitizer from '../tools/sanitizer';
 
-const API_URL = 'https://main.apis.furwaz.fr';
+const API_URL = 'https://api.furwaz.com';
 
 export async function askToken (req: express.Request, res: express.Response) {
     let response: any;
