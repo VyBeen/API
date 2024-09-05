@@ -1,7 +1,7 @@
 
 import youtubeDl from 'youtube-dl-exec';
-import yts from 'yt-search';
 import fs from 'fs';
+import path from 'path';
 
 interface StreamResult {
     filepath: string
@@ -14,26 +14,35 @@ export async function getOrCreateStream (id: string): Promise<StreamResult> {
             fs.mkdirSync('./tmp');
         }
 
-        const filepath = `./tmp/${id}.mp3`;
-        fs.stat(filepath, (err, stats) => {
+        fs.stat('/usr/bin/yt-dlp', (err, stats) => {
+            let downloader: any;
             if (err !== null) {
-                console.log('file not found, downloading');
-                yts({ videoId: id }).then(res => {
-                    console.log('got url = ', res.url);
-                    youtubeDl(res.url, {
+                downloader = youtubeDl;
+            } else {
+                downloader = youtubeDl.create('/usr/bin/yt-dlp');
+            }
+
+            const filepath = path.join(__dirname, 'tmp', `${id}.mp3`);
+            fs.stat(filepath, (err, stats) => {
+                if (err !== null) {
+                    console.log('file ' + filepath + ' not found, downloading');
+                    downloader('https://youtube.com/watch?v=' + id, {
                         output: filepath,
                         audioFormat: 'mp3',
                         audioQuality: 0,
-                        extractAudio: true
-                    }).then(output => {
+                        extractAudio: true,
+                        addHeader: ['referer:youtube.com', 'user-agent:googlebot']
+                    }).then((output: any) => {
+                        console.log('Downloaded', output);
                         resolve(getOrCreateStream(id));
-                    }).catch(err => {
+                    }).catch((err: any) => {
                         reject(err);
                     });
-                }).catch(err => {
-                    console.error(err);
-                });
-            } else resolve({ filepath, size: stats.size });
+                } else {
+                    console.log('file ' + filepath + ' found');
+                    resolve({ filepath, size: stats.size });
+                }
+            });
         });
 
         // const filepath = `./tmp/${id}.mp3`;

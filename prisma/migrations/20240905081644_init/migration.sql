@@ -13,7 +13,9 @@ CREATE TABLE `User` (
 CREATE TABLE `Room` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
+    `ownerId` INTEGER NULL,
 
+    UNIQUE INDEX `Room_ownerId_key`(`ownerId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -47,6 +49,7 @@ CREATE TABLE `Playlist` (
 CREATE TABLE `Player` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `position` DOUBLE NOT NULL,
+    `cursorDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `playing` BOOLEAN NOT NULL,
     `roomId` INTEGER NULL,
     `songId` INTEGER NULL,
@@ -60,10 +63,13 @@ CREATE TABLE `Player` (
 ALTER TABLE `User` ADD CONSTRAINT `User_roomId_fkey` FOREIGN KEY (`roomId`) REFERENCES `Room`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `Room` ADD CONSTRAINT `Room_ownerId_fkey` FOREIGN KEY (`ownerId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Song` ADD CONSTRAINT `Song_nextId_fkey` FOREIGN KEY (`nextId`) REFERENCES `Song`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Playlist` ADD CONSTRAINT `Playlist_roomId_fkey` FOREIGN KEY (`roomId`) REFERENCES `Room`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `Playlist` ADD CONSTRAINT `Playlist_roomId_fkey` FOREIGN KEY (`roomId`) REFERENCES `Room`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Playlist` ADD CONSTRAINT `Playlist_headId_fkey` FOREIGN KEY (`headId`) REFERENCES `Song`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -72,7 +78,7 @@ ALTER TABLE `Playlist` ADD CONSTRAINT `Playlist_headId_fkey` FOREIGN KEY (`headI
 ALTER TABLE `Playlist` ADD CONSTRAINT `Playlist_tailId_fkey` FOREIGN KEY (`tailId`) REFERENCES `Song`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Player` ADD CONSTRAINT `Player_roomId_fkey` FOREIGN KEY (`roomId`) REFERENCES `Room`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `Player` ADD CONSTRAINT `Player_roomId_fkey` FOREIGN KEY (`roomId`) REFERENCES `Room`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Player` ADD CONSTRAINT `Player_songId_fkey` FOREIGN KEY (`songId`) REFERENCES `Song`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

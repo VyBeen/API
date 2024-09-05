@@ -16,7 +16,9 @@ export function getSongTitleAuthor (title: string, author: string): { title: str
     const sanitizedTitle = sanitizeTitle(title);
     const sanitizedAuthor = sanitizeAuthor(author);
 
-    if (title.match(/.* - .*/) !== null) {
+    const splitted = sanitizedTitle.split(' - ');
+
+    if (splitted.length > 1) {
         return {
             title: sanitizedTitle.split(' - ')[1].replace(/-/g, '').trim(),
             author: sanitizedTitle.split(' - ')[0].replace(/-/g, '').trim()
