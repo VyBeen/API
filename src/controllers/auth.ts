@@ -42,7 +42,7 @@ export async function retreiveUser (req: express.Request, res: express.Response)
     const APP_KEY = process.env.APP_KEY as string;
 
     try {
-        response = await fetch(API_URL + '/portal/user?token=' + token, {
+        response = await fetch(API_URL + `/portal/${token}/user`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${APP_KEY}` }
         });
@@ -53,8 +53,9 @@ export async function retreiveUser (req: express.Request, res: express.Response)
         return;
     }
 
-    const userData = json?.data?.user;
+    const userData = json?.data;
     if (userData === undefined || userData === null) {
+        console.error('User not retreived : json = ', json);
         new ErrLog(res.locals.lang.error.generic.internalError, ErrLog.CODE.INTERNAL_SERVER_ERROR).sendTo(res);
         return;
     }
